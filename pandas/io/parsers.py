@@ -1818,44 +1818,18 @@ class ExcelFile(object):
     """
     def __init__(self, path_or_buf, kind=None):
         self.kind = kind
-        self.use_xlsx = kind == 'xls'
+        self.use_xlsx = False
 
         self.path_or_buf = path_or_buf
         self.tmpfile = None
 
         if isinstance(path_or_buf, basestring):
-            if kind == 'xls' or (kind is None and
-                                 path_or_buf.endswith('.xls')):
-                self.use_xlsx = False
-                import xlrd
-                self.book = xlrd.open_workbook(path_or_buf)
-            else:
-                self.use_xlsx = True
-                try:
-                    from openpyxl.reader.excel import load_workbook
-                    self.book = load_workbook(path_or_buf, use_iterators=True)
-                except ImportError:  # pragma: no cover
-                    raise ImportError(_openpyxl_msg)
+            import xlrd
+            self.book = xlrd.open_workbook(path_or_buf)
         else:
             data = path_or_buf.read()
-
-            if self.kind == 'xls':
-                import xlrd
-                self.book = xlrd.open_workbook(file_contents=data)
-            elif self.kind == 'xlsx':
-                from openpyxl.reader.excel import load_workbook
-                buf = py3compat.BytesIO(data)
-                self.book = load_workbook(buf, use_iterators=True)
-            else:
-                try:
-                    import xlrd
-                    self.book = xlrd.open_workbook(file_contents=data)
-                    self.use_xlsx = False
-                except Exception:
-                    self.use_xlsx = True
-                    from openpyxl.reader.excel import load_workbook
-                    buf = py3compat.BytesIO(data)
-                    self.book = load_workbook(buf, use_iterators=True)
+            import xlrd
+            self.book = xlrd.open_workbook(file_contents=data)
 
     def __repr__(self):
         return object.__repr__(self)
